@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎙️ AI Podcast Maker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .step {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid #4facfe;
+        }
+
+        .step.active {
+            border-left-color: #00c851;
+            background: #f1f8e9;
+        }
+
+        .step.completed {
+            border-left-color: #28a745;
+            background: #e8f5e8;
+        }
+
+        .step.error {
+            border-left-color: #dc3545;
+            background: #ffeaea;
+        }
+
+        .step h3 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            background: #4facfe;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #333;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+
+        .persona-card {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px 0;
+            transition: all 0.3s;
+        }
+
+        .persona-card:hover {
+            border-color: #4facfe;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .persona-card.selected {
+            border-color: #00c851;
+            background: #f1f8e9;
+        }
+
+        .persona-card h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .persona-card p {
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-submitted {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-processing {
+            background: #cce5ff;
+            color: #0056b3;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .progress-bar {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 8px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .log {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .audio-player {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎙️ AI Podcast Maker</h1>
+            <p>Generate Arabic podcasts from topic to audio using AI</p>
+        </div>
+
+        <div class="content">
+            <!-- Step 1: Topic Submission -->
+            <div class="step active" id="step1">
+                <h3><span class="step-number">1</span>Submit Topic</h3>
+                <div class="form-group">
+                    <label for="topic">Topic (Arabic):</label>
+                    <input type="text" id="topic" placeholder="e.g., الطاقة المتجددة">
+                </div>
+                <div class="form-group">
+                    <label for="info">Additional Information:</label>
+                    <textarea id="info" placeholder="Provide more details about the topic..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="pdfFile">Upload PDF (Optional):</label>
+                    <input type="file" id="pdfFile" accept=".pdf">
+                </div>
+                <button class="btn" onclick="submitTopic()">
+                    <span id="submit-loading" class="loading hidden"></span>
+                    Submit Topic
+                </button>
+            </div>
+
+            <!-- Step 2: Persona Selection -->
+            <div class="step hidden" id="step2">
+                <h3><span class="step-number">2</span>Review Persona Suggestions</h3>
+                <div id="persona-suggestions"></div>
+                <div style="margin-top: 20px;">
+                    <button class="btn" onclick="generatePersonas()">
+                        <span id="personas-loading" class="loading hidden"></span>
+                        Generate Personas
+                    </button>
+                    <button class="btn btn-success hidden" id="confirm-personas-btn" onclick="confirmPersonas()">
+                        Confirm Personas
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Content Generation -->
+            <div class="step hidden" id="step3">
+                <h3><span class="step-number">3</span>Generate Content</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress" style="width: 0%"></div>
+                </div>
+                <div id="generation-status">Ready to generate content...</div>
+                <button class="btn" onclick="generateContent()">
+                    <span id="content-loading" class="loading hidden"></span>
+                    Generate Outline & Script
+                </button>
+                <button class="btn btn-secondary" onclick="runFullPipeline()" style="margin-left: 10px;">
+                    Auto-Complete All Steps
+                </button>
+            </div>
+
+            <!-- Step 4: Audio Generation -->
+            <div class="step hidden" id="step4">
+                <h3><span class="step-number">4</span>Generate Audio</h3>
+                <div id="audio-status">Ready to generate audio...</div>
+                <button class="btn" onclick="generateAudio()">
+                    <span id="audio-loading" class="loading hidden"></span>
+                    Generate TTS Audio
+                </button>
+                
+                <div class="audio-player hidden" id="audio-player">
+                    <h4>🎵 Your Podcast is Ready!</h4>
+                    <audio controls style="width: 100%; margin-top: 10px;">
+                        <source id="audio-source" src="" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-success" onclick="downloadAudio()">
+                            📥 Download MP3
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Monitor -->
+            <div class="step" id="status-monitor">
+                <h3><span class="step-number">📊</span>Status Monitor</h3>
+                <div id="current-status">No podcast in progress</div>
+                <div id="podcast-id-display" class="hidden">
+                    <strong>Podcast ID:</strong> <span id="current-podcast-id"></span>
+                    <button class="btn btn-secondary" onclick="checkStatus()" style="margin-left: 10px; font-size: 12px;">
+                        🔄 Refresh Status
+                    </button>
+                </div>
+            </div>
+
+            <!-- Debug Log -->
+            <div class="step">
+                <h3><span class="step-number">🔍</span>Debug Log</h3>
+                <button class="btn btn-secondary" onclick="clearLog()" style="margin-bottom: 10px;">
+                    Clear Log
+                </button>
+                <div class="log" id="debug-log">
+                    Ready to start...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
